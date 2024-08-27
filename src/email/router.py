@@ -21,7 +21,7 @@ class SaveEmails(Resource):
         schema = EmailSchema()
         errors = schema.validate(data)
         if errors:
-            return jsonify(errors), 400
+            return errors, 400
         
         save_email(
             event_id=data['event_id'],

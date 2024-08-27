@@ -2,6 +2,9 @@ from src.database import db
 from src.email.models import Email
 from src.recipient.models import Recipient
 from src.email_sent.models import EmailSent
+from src.email.queries import get_emails_to_send
+from src.recipient.queries import get_all_recipients
+from src.email_sent.queries import save_bulk_email_sent
 from datetime import datetime
 from main import app, celery
 import uuid
@@ -20,10 +23,9 @@ def chunk_recipients(recipients, chunk_size):
 
 def check_emails_to_be_delivered():
     logger.info("Task started...")
-    print("current datetime : ", datetime.now())
-    emails = Email.query.filter(Email.timestamp <= datetime.now()).all()
+    emails = get_emails_to_send(datetime.now())
     for email in emails:
-        recipients = Recipient.query.all()
+        recipients = get_all_recipients()
         recipients_email = [recipient.email for recipient in recipients]
 
         for batch_recipients in chunk_recipients(recipients_email, 10):
@@ -50,9 +52,7 @@ def check_emails_to_be_delivered():
                         status = 'failed'
                     )
                     email_sent.append(payload_email_sent)
-            db.session.bulk_save_objects(payload_email_sent)
-
-    db.session.commit()
+            save_bulk_email_sent(email_sent)
 
 @celery.task(name='send_emails_task')
 def send_emails_task():
