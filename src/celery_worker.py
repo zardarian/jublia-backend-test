@@ -2,7 +2,7 @@ from src.database import db
 from src.email.models import Email
 from src.recipient.models import Recipient
 from src.email_sent.models import EmailSent
-from src.email.queries import get_emails_to_send
+from src.email.queries import get_emails_to_send, update_emails_status
 from src.recipient.queries import get_all_recipients
 from src.email_sent.queries import save_bulk_email_sent
 from datetime import datetime
@@ -53,6 +53,8 @@ def check_emails_to_be_delivered():
                     )
                     email_sent.append(payload_email_sent)
             save_bulk_email_sent(email_sent)
+        
+        update_emails_status(email.id, 'sent')
 
 @celery.task(name='send_emails_task')
 def send_emails_task():

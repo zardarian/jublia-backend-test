@@ -61,7 +61,8 @@ def test_check_emails_to_be_delivered(mock_save_bulk_email_sent, mock_send_email
 @patch('src.celery_worker.get_all_recipients')
 @patch('src.celery_worker.send_email')
 @patch('src.celery_worker.save_bulk_email_sent')
-def test_check_emails_to_be_delivered_with_failed_send_email(mock_save_bulk_email_sent, mock_send_email, mock_get_all_recipients, mock_get_emails_to_send):
+@patch('src.celery_worker.update_emails_status')
+def test_check_emails_to_be_delivered_with_failed_send_email(mock_update_emails_status, mock_save_bulk_email_sent, mock_send_email, mock_get_all_recipients, mock_get_emails_to_send):
     # Arrange
     # Mock the return values
     mock_email = MagicMock()
@@ -76,6 +77,8 @@ def test_check_emails_to_be_delivered_with_failed_send_email(mock_save_bulk_emai
 
     mock_send_email.return_value = False
 
+    mock_update_emails_status.return_value = True
+
     # Act
     check_emails_to_be_delivered()
 
@@ -86,6 +89,8 @@ def test_check_emails_to_be_delivered_with_failed_send_email(mock_save_bulk_emai
     # Ensure send_email & bulk_email called based on recipients chunks
     assert mock_send_email.call_count == 2
     assert mock_save_bulk_email_sent.call_count == 2
+    
+    mock_update_emails_status.assert_called_once()
 
     # Check the arguments passed to save_bulk_email_sent to ensure correct payload was created
     args, kwargs = mock_save_bulk_email_sent.call_args
