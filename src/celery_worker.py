@@ -56,4 +56,5 @@ def check_emails_to_be_delivered():
 
 @celery.task(name='send_emails_task')
 def send_emails_task():
-    check_emails_to_be_delivered()  
+    with app.app_context():
+        check_emails_to_be_delivered()
