@@ -2,6 +2,7 @@ from flask import Flask
 from flask_restx import Api
 from src.email.router import api as email_router
 from src.recipient.router import api as recipient_router
+from src.email_sent.router import api as email_sent_router
 from src.database import init_db
 from src.celery_config import make_celery
 from dotenv import load_dotenv
@@ -24,6 +25,7 @@ def create_app():
     # Register routers
     api.add_namespace(email_router, path='/api/email')
     api.add_namespace(recipient_router, path='/api/recipient')
+    api.add_namespace(email_sent_router, path='/api/email_sent')
 
     return app
 

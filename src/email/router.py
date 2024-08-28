@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from flask_restx import Namespace, Resource, fields
 from .schemas import EmailSchema
-from .queries import save_email
+from .queries import save_email, get_emails
 
 api = Namespace('email', description='Email related operations')
 
@@ -30,3 +30,28 @@ class SaveEmails(Resource):
             timestamp=data['timestamp']
         )
         return {"message": "Email saved successfully"}, 201
+
+@api.route('/get_emails')
+class GetEmails(Resource):
+    @api.expect(api.parser()
+        .add_argument('event_id', type=int, required=False, help='Filter by event ID')
+        .add_argument('email_subject', type=str, required=False, help='Filter by email subject')
+        .add_argument('status', type=str, required=False, help='Filter by email status'))
+    @api.response(200, 'Emails retrieved successfully')
+    def get(self):
+        # Parse query parameters
+        args = request.args
+
+        filters = {
+            'event_id': args.get('event_id'),
+            'email_subject': args.get('email_subject'),
+            'status': args.get('status')
+        }
+
+        # Remove None values from filters
+        filters = {k: v for k, v in filters.items() if v is not None}
+
+        # Get the filtered emails
+        emails = get_emails(**filters)
+
+        return emails

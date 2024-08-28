@@ -15,3 +15,14 @@ def save_bulk_recipients(emails):
 
 def get_all_recipients():
     return Recipient.query.all()
+
+def get_recipients(**filters):
+    query = Recipient.query
+
+    if 'id' in filters:
+        query = query.filter_by(id=filters['id'])
+
+    if 'email' in filters:
+        query = query.filter(Recipient.email.like(f"%{filters['email']}%"))
+
+    return [recipient.to_dict() for recipient in query.all()]

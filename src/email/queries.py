@@ -27,3 +27,17 @@ def update_emails_status(id, status):
         return True
     else:
         return False
+
+def get_emails(**filters):
+    query = Email.query
+
+    if 'event_id' in filters:
+        query = query.filter_by(event_id=filters['event_id'])
+
+    if 'email_subject' in filters:
+        query = query.filter(Email.email_subject.like(f"%{filters['email_subject']}%"))
+
+    if 'status' in filters:
+        query = query.filter_by(status=filters['status'])
+
+    return [email.to_dict() for email in query.all()]
